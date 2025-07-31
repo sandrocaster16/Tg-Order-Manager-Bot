@@ -3,5 +3,4 @@ SQLAlchemy==2.0.30
 aiosqlite==0.20.0
 python-dotenv==1.0.1
 gspread==5.12.4
-gspread-asyncio==1.2.0
 google-auth-oauthlib
