@@ -1,5 +1,3 @@
-# orm_query.py
-
 import asyncio
 from sqlalchemy import select, delete, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +8,6 @@ from google_sheets.sheets_api import (
     add_platform_to_sheet, delete_platform_from_sheet
 )
 
-# --- Функции для работы с Платформами ---
 async def orm_add_platform(session: AsyncSession, name: str):
     obj = Platform(name=name)
     session.add(obj)
@@ -29,7 +26,6 @@ async def orm_delete_platform(session: AsyncSession, platform_id: int):
     await session.commit()
     asyncio.create_task(delete_platform_from_sheet(platform_id))
 
-# --- Функции для работы с Заказами ---
 async def orm_add_order(session: AsyncSession, data: dict):
     obj = Order(name=data['name'], platform_id=data['platform_id'], link=data.get('link'), payment_status=data['payment_status'], comment=data.get('comment'))
     session.add(obj)

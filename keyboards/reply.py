@@ -1,7 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 def get_main_reply_keyboard():
-    """Создает основную клавиатуру с кнопками внизу экрана."""
     return ReplyKeyboardMarkup(
         keyboard=[
             [

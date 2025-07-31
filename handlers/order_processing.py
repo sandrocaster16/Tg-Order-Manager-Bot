@@ -1,5 +1,3 @@
-# order_processing.py
-
 from math import ceil
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
@@ -24,8 +22,6 @@ router = Router()
 
 ORDERS_PER_PAGE = 5
 
-# --- Новая логика пагинации ---
-
 async def build_orders_list(session: AsyncSession, page: int = 1):
     offset = (page - 1) * ORDERS_PER_PAGE
     orders = await orm_get_orders(session, limit=ORDERS_PER_PAGE, offset=offset)
@@ -48,8 +44,6 @@ async def paginate_orders_list(callback: CallbackQuery, callback_data: Paginator
     text, keyboard = await build_orders_list(session, page=callback_data.page)
     await callback.message.edit_text(text, reply_markup=keyboard)
     await callback.answer()
-    
-# --- Просмотр, редактирование и удаление конкретного заказа ---
 
 @router.callback_query(OrderSelectionCallback.filter())
 async def view_order_details(callback: CallbackQuery, callback_data: OrderSelectionCallback, session: AsyncSession, state: FSMContext):
@@ -73,8 +67,6 @@ async def show_confirmation_summary(message: Message, state: FSMContext, edit_mo
         await message.edit_text(text, reply_markup=get_order_confirmation_keyboard())
     else:
         await message.answer(text, reply_markup=get_order_confirmation_keyboard())
-
-# --- Логика создания заказа (FSM) ---
 
 @router.callback_query(F.data == "create_order")
 async def create_order_start(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
@@ -211,49 +203,28 @@ async def edit_existing_field_prompt(callback: CallbackQuery, state: FSMContext,
         markup = get_edit_action_keyboard(back_callback=OrderSelectionCallback(order_id=order_id).pack())
     await callback.message.edit_text(prompts[field], reply_markup=markup)
 
-# --- КЛЮЧЕВЫЕ ИЗМЕНЕНИЯ ЗДЕСЬ ---
-
-# ИЗМЕНЕНО: Хендлер для кнопки "Оставить пустым"
 @router.callback_query(EditOrder.get_new_value, F.data == "leave_empty")
 async def leave_field_empty_existing(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
     data = await state.get_data()
     field, order_id = data.get("editing_field"), data.get("order_id")
     
-    # 1. Обновляем поле в БД, устанавливая его в None
     await orm_update_order(session, order_id, {field: None})
-    
-    # 2. Очищаем состояние FSM
     await state.clear()
-    
-    # 3. Получаем обновленный заказ из БД
     order = await orm_get_order(session, order_id)
-    
-    # 4. Редактируем сообщение с запросом, превращая его в обновленную карточку заказа
     text = format_order_for_display(order)
     keyboard = get_order_details_keyboard(order_id=order.id)
     await callback.message.edit_text(text, reply_markup=keyboard, disable_web_page_preview=True)
-    
-    # 5. Отправляем пользователю всплывающее уведомление
     await callback.answer("✅ Поле очищено!", show_alert=False)
 
-
-# ИЗМЕНЕНО: Хендлер для получения нового текстового значения
 @router.message(EditOrder.get_new_value)
 async def get_new_value_for_existing_order(message: Message, state: FSMContext, session: AsyncSession):
     data = await state.get_data()
     field, order_id = data.get("editing_field"), data.get("order_id")
 
-    # 1. Обновляем поле в БД, устанавливая новое значение
     await orm_update_order(session, order_id, {field: message.text})
-    
-    # 2. Очищаем состояние FSM
     await state.clear()
-
-    # 3. Получаем обновленный заказ из БД
     order = await orm_get_order(session, order_id)
     
-    # 4. Отправляем НОВОЕ сообщение с обновленной карточкой заказа
-    # (мы не можем редактировать сообщение пользователя, поэтому отправляем новое)
     text = format_order_for_display(order)
     keyboard = get_order_details_keyboard(order_id=order.id)
     await message.answer("✅ Поле обновлено!")

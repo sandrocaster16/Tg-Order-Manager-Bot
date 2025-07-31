@@ -10,7 +10,6 @@ class Platform(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     
-    # ИЗМЕНЕНО: убрана опасная каскадная политика 'all, delete-orphan'
     orders = relationship("Order", back_populates="platform")
 
 class Order(Base):

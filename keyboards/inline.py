@@ -1,11 +1,8 @@
-# inline.py
-
 from math import ceil
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-# --- CallbackData Factories ---
 class OrderCallback(CallbackData, prefix="order"):
     action: str
     order_id: int
@@ -18,11 +15,9 @@ class Paginator(CallbackData, prefix="pag"):
     action: str
     page: int
     
-# НОВЫЙ Callback для выбора заказа из списка
 class OrderSelectionCallback(CallbackData, prefix="sel_ord"):
     order_id: int
 
-# --- Клавиатуры ---
 def get_main_menu_keyboard():
     builder = InlineKeyboardBuilder()
     builder.button(text="📝 Создать заказ", callback_data="create_order")
@@ -31,18 +26,15 @@ def get_main_menu_keyboard():
     builder.adjust(1)
     return builder.as_markup()
 
-# --- ИЗМЕНЕНО: Клавиатура для нового вида пагинации ---
 def get_orders_list_keyboard(orders: list, page: int, total_pages: int):
     builder = InlineKeyboardBuilder()
     
-    # Создаем кнопки для каждого заказа
     for order in orders:
         builder.button(
             text=f"🏷️ {order.name}",
             callback_data=OrderSelectionCallback(order_id=order.id).pack()
         )
-    
-    # Создаем навигационные кнопки
+
     nav_buttons = []
     if page > 1:
         nav_buttons.append(InlineKeyboardButton(text="⬅️", callback_data=Paginator(action="prev", page=page-1).pack()))
@@ -52,16 +44,14 @@ def get_orders_list_keyboard(orders: list, page: int, total_pages: int):
     if page < total_pages:
         nav_buttons.append(InlineKeyboardButton(text="➡️", callback_data=Paginator(action="next", page=page+1).pack()))
         
-    # Добавляем кнопки заказов и навигации
-    builder.adjust(1) # Каждый заказ на своей строке
-    builder.row(*nav_buttons, width=3) # Кнопки навигации в одной строке
+    builder.adjust(1)
+    builder.row(*nav_buttons, width=3)
     builder.row(InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="main_menu"))
     
     return builder.as_markup()
 
 
 def get_order_details_keyboard(order_id: int):
-    """Клавиатура для просмотра деталей одного заказа."""
     builder = InlineKeyboardBuilder()
     builder.button(text="✏️ Редактировать", callback_data=OrderCallback(action="edit", order_id=order_id).pack())
     builder.button(text="🗑️ Удалить", callback_data=OrderCallback(action="delete_prompt", order_id=order_id).pack())
@@ -75,9 +65,6 @@ def get_delete_confirmation_keyboard(order_id: int):
     builder.button(text="✅ Да, удалить", callback_data=OrderCallback(action="delete_confirm", order_id=order_id).pack())
     builder.button(text="⬅️ Нет, назад", callback_data=OrderSelectionCallback(order_id=order_id).pack()) # Возврат к деталям
     return builder.as_markup()
-
-
-# --- Остальные клавиатуры (без изменений, но привожу полностью) ---
 
 def get_platform_management_keyboard():
     builder = InlineKeyboardBuilder()

@@ -7,12 +7,12 @@ class AddOrder(StatesGroup):
     payment_status = State()
     comment = State()
     confirmation = State()
-    editing_field = State() # <-- ДОБАВЛЕНО
+    editing_field = State()
 
 class EditOrder(StatesGroup):
     select_field = State()
     get_new_value = State()
-    
+
 class AddPlatform(StatesGroup):
     name = State()
 

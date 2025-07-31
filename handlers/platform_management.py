@@ -15,7 +15,6 @@ router = Router()
 async def manage_platforms(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
     await state.clear()
     
-    # ИЗМЕНЕНО: Выводим список платформ перед меню
     platforms = await orm_get_platforms(session)
     if platforms:
         platform_list = "\n".join([f"{i+1}) {p.name}" for i, p in enumerate(platforms)])
@@ -29,7 +28,6 @@ async def manage_platforms(callback: CallbackQuery, state: FSMContext, session: 
     )
     await callback.answer()
 
-# --- Добавление платформы ---
 @router.callback_query(F.data == "add_platform")
 async def add_platform_start(callback: CallbackQuery, state: FSMContext):
     await state.set_state(AddPlatform.name)
@@ -45,10 +43,8 @@ async def add_platform_name(message: Message, state: FSMContext, session: AsyncS
     except IntegrityError:
         await message.answer(f"⚠️ Платформа с названием '<b>{platform_name}</b>' уже существует.")
     
-    # Возвращаемся в главное меню, чтобы показать обновленный список
     await cmd_start(message, state)
 
-# --- Удаление платформы ---
 @router.callback_query(F.data == "delete_platform_select")
 async def delete_platform_select(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
     platforms = await orm_get_platforms(session)

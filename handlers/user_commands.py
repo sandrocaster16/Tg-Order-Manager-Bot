@@ -14,7 +14,6 @@ async def cmd_start(message: Message, state: FSMContext):
     text = "👋 Привет! Я бот для управления заказами. Выберите действие:"
     await message.answer(text, reply_markup=get_main_menu_keyboard())
 
-
 @router.callback_query(F.data == "main_menu")
 async def cb_main_menu(callback: CallbackQuery, state: FSMContext):
     await state.clear()
@@ -36,7 +35,6 @@ async def cmd_help(message: Message):
 
 
 @router.message(Command("cancel"))
-# ИСПРАВЛЕНО: Убран фильтр на текст "Отмена"
 @router.message(F.text == "Главное меню")
 async def cmd_cancel(message: Message, state: FSMContext):
     await state.clear()
@@ -49,4 +47,4 @@ async def cmd_cancel(message: Message, state: FSMContext):
 
 @router.message(F.text == "Таблица")
 async def table_test_message(message: Message):
-    await message.answer("📊 Функция экспорта в таблицу находится в разработке.")
+    await message.answer("<a href='https://docs.google.com/spreadsheets/d/1IMI46WTmM--okQJGI3YaWh318HfE2JUsy_w2QNqwpYY/edit?usp=sharing'>📊 Таблица 📊</a>")

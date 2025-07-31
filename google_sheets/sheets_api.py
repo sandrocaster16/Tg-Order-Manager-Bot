@@ -1,5 +1,3 @@
-# google_sheets/sheets_api.py
-
 import os
 import logging
 import asyncio
@@ -8,9 +6,7 @@ from dotenv import load_dotenv
 
 import gspread
 from google.oauth2.service_account import Credentials
-# ИМПОРТИРУЕМ НУЖНЫЕ МОДУЛИ
 from datetime import timezone, timedelta
-
 from database.models import Order, Platform
 
 load_dotenv()
@@ -21,10 +17,7 @@ PLATFORMS_SHEET_NAME = "Платформы"
 ORDERS_HEADERS = ["ID Заказа", "Название", "Платформа", "Ссылка", "Статус оплаты", "Комментарий", "Дата создания"]
 PLATFORMS_HEADERS = ["ID Платформы", "Название", "Дата создания"]
 
-# НОВЫЙ КОД: Задаем нашу часовую зону (UTC+3)
 LOCAL_TIMEZONE = timezone(timedelta(hours=3))
-
-# --- СИНХРОННЫЕ ФУНКЦИИ ---
 
 def _get_worksheet_sync(sheet_name: str):
     try:
@@ -41,7 +34,6 @@ def _get_worksheet_sync(sheet_name: str):
         raise
 
 def _format_order(order: Order) -> list:
-    # ИЗМЕНЕНО: Конвертируем время перед форматированием
     utc_time = order.created.replace(tzinfo=timezone.utc)
     local_time = utc_time.astimezone(LOCAL_TIMEZONE)
     
@@ -54,7 +46,6 @@ def _format_order(order: Order) -> list:
     ]
 
 def _format_platform(platform: Platform) -> list:
-    # ИЗМЕНЕНО: Конвертируем время перед форматированием
     utc_time = platform.created.replace(tzinfo=timezone.utc)
     local_time = utc_time.astimezone(LOCAL_TIMEZONE)
     
@@ -114,8 +105,6 @@ def delete_platform_sync(platform_id: int):
     cell = worksheet.find(str(platform_id), in_column=1)
     if cell:
         worksheet.delete_rows(cell.row)
-
-# --- АСИНХРОННЫЕ ОБЕРТКИ ---
 
 async def sync_orders_to_sheet(orders: List[Order]):
     await asyncio.to_thread(sync_orders_sync, orders)
